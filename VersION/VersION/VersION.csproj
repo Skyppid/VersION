@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PackageId>Skyppid.VersION</PackageId>
+		<PackAsTool>True</PackAsTool>
+		<ToolCommandName>versION</ToolCommandName>
+		<PackageOutputPath>./nupkg</PackageOutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="DryIoc.dll" Version="4.8.6" />
+	  <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\VersION.Core\VersION.Core.csproj" />
+	</ItemGroup>
+
+</Project>
