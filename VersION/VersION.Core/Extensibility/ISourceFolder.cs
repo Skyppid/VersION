@@ -57,12 +57,13 @@ public interface ISourceFolder : IDisposable
 
     ///-------------------------------------------------------------------------------------------------
     /// <summary>
-    ///     Gets the repositories in case the source folder is a multi repository source folder.
+    ///     Gets the repositories in case the source folder is a multi repository source folder. The
+    ///     key represents the path of the repository.
     /// </summary>
     ///
     /// <value> The repositories.   </value>
     ///-------------------------------------------------------------------------------------------------
-    IReadOnlyList<AsyncLazy<Repository>> Repositories { get; }
+    IReadOnlyDictionary<string, AsyncLazy<Repository>> Repositories { get; }
 
     /// <summary>   (Immutable) a source folder scan progress.  </summary>
     public record SourceFolderScanProgress(string State, int ProjectsAnalyzed);

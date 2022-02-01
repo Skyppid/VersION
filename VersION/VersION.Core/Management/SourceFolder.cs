@@ -1,4 +1,5 @@
-﻿using LibGit2Sharp;
+﻿using System.Collections.ObjectModel;
+using LibGit2Sharp;
 using VersION.Core.Extensibility;
 
 namespace VersION.Core.Management;
@@ -12,7 +13,8 @@ internal sealed class SourceFolder : ISourceFolder
     }
     
     private readonly List<IProject> _projects = new();
-    private readonly List<AsyncLazy<Repository>> _repositories = new();
+    private readonly Dictionary<string, AsyncLazy<Repository>> _repositories = new();
+    private IReadOnlyDictionary<string, AsyncLazy<Repository>>? _readOnlyRepositories;
 
     /// <inheritdoc />
     public string FullPath { get; }
@@ -29,9 +31,9 @@ internal sealed class SourceFolder : ISourceFolder
     /// <inheritdoc />
     public GitUtilization GitUtilization { get; private set; }
 
-    public AsyncLazy<Repository> PrimaryRepository { get; private set; }
+    public AsyncLazy<Repository>? PrimaryRepository { get; private set; }
 
-    public IReadOnlyList<AsyncLazy<Repository>> Repositories => _repositories.AsReadOnly();
+    public IReadOnlyDictionary<string, AsyncLazy<Repository>> Repositories => _readOnlyRepositories ??= new ReadOnlyDictionary<string, AsyncLazy<Repository>>(_repositories);
 
     ///-------------------------------------------------------------------------------------------------
     /// <summary>   Uses the specified path as the source folder.   </summary>
@@ -97,7 +99,7 @@ internal sealed class SourceFolder : ISourceFolder
         foreach (var file in files)
         {
             if (cancellationToken.IsCancellationRequested) break;
-            var task = Project.ScanProject(file, cancellationToken);
+            var task = Project.ScanProject(file, this, cancellationToken);
             projects.Add(task);
             _ = task.ContinueWith(t =>
             {
@@ -125,13 +127,14 @@ internal sealed class SourceFolder : ISourceFolder
         const string gitDir = ".git";
 
         var gitUtil = GitUtilization.None;
+        DirectoryInfo[] matches;
 
         // Trivial case: .git folder is directly inside source folder
-        if (directory.GetDirectories(gitDir, SearchOption.TopDirectoryOnly).Any())
+        if ((matches = directory.GetDirectories(gitDir, SearchOption.TopDirectoryOnly)).Any())
         {
             gitUtil = GitUtilization.Full;
             PrimaryRepository = new AsyncLazy<Repository>(() => new(directory.FullName));
-            _repositories.Add(PrimaryRepository);
+            _repositories.Add(matches.First().FullName, PrimaryRepository);
             return gitUtil;
         }
 
@@ -139,11 +142,11 @@ internal sealed class SourceFolder : ISourceFolder
         DirectoryInfo? current = directory;
         while ((current = current.Parent) != null)
         {
-            if (current.GetDirectories(gitDir, SearchOption.TopDirectoryOnly).Any())
+            if ((matches = current.GetDirectories(gitDir, SearchOption.TopDirectoryOnly)).Any())
             {
                 gitUtil = GitUtilization.Full;
                 PrimaryRepository = new AsyncLazy<Repository>(() => new(current.FullName));
-                _repositories.Add(PrimaryRepository);
+                _repositories.Add(matches.First().FullName, PrimaryRepository);
                 break;
             }
         }
@@ -155,7 +158,8 @@ internal sealed class SourceFolder : ISourceFolder
             gitUtil = subDirectories.Length == 1 ? GitUtilization.Partial :
                 subDirectories.Length > 1 ? GitUtilization.MultiRepo : GitUtilization.None;
 
-            // TODO: Implement setup of multiple repositories
+            foreach (var subDir in subDirectories)
+                _repositories.Add(subDir.FullName, new AsyncLazy<Repository>(() => new Repository(subDir.FullName)));
         }
 
         return gitUtil;
@@ -163,7 +167,7 @@ internal sealed class SourceFolder : ISourceFolder
 
     public void Dispose()
     {
-        foreach (var repo in _repositories.Where(repo => repo.IsValueCreated))
+        foreach (var repo in _repositories.Values.Where(repo => repo.IsValueCreated))
             repo.Value.Result.Dispose();
         _repositories.Clear();
         PrimaryRepository = null!;

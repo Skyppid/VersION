@@ -1,4 +1,7 @@
-﻿namespace VersION.Core.Extensibility;
+﻿using LibGit2Sharp;
+using Version = System.Version;
+
+namespace VersION.Core.Extensibility;
 
 public interface IProject
 {
@@ -9,4 +12,8 @@ public interface IProject
     Version AssemblyVersion { get; }
 
     string InformationalVersion { get; }
+
+    ISourceFolder SourceFolder { get; }
+
+    AsyncLazy<Repository> Repository { get; }
 }

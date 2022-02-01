@@ -1,5 +1,7 @@
 ﻿using System.Xml;
 using VersION.Core.Extensibility;
+using LibGit2Sharp;
+using Version = System.Version;
 
 namespace VersION.Core.Management;
 
@@ -9,10 +11,24 @@ internal sealed class Project : IProject
     {
     }
 
-    internal static async Task<Project> ScanProject(FileInfo file, CancellationToken cancellationToken)
+    public string Name { get; private set; } = default!;
+    public SemanticVersion PackageVersion { get; private set; }
+    public Version AssemblyVersion { get; private set; } = default!;
+    public string InformationalVersion { get; private set; } = default!;
+    public ISourceFolder SourceFolder { get; init; } = default!;
+    public AsyncLazy<Repository> Repository { get; private set; } = default!;
+
+    internal static async Task<Project> ScanProject(FileInfo file, ISourceFolder sourceFolder, CancellationToken cancellationToken)
     {
-        Project project = new();
+        Project project = new()
+        {
+            SourceFolder = sourceFolder
+        };
         await project.ScanFrom(file, cancellationToken);
+
+        project.Repository = sourceFolder.Repositories.MinBy(x => Path.GetRelativePath(file.FullName, x.Key).Length)
+            .Value;
+
         return project;
     }
 
@@ -44,8 +60,5 @@ internal sealed class Project : IProject
         AssemblyVersion = Version.TryParse(versionProperty?.InnerText, out var version) ? version : new Version(1, 0);
     }
 
-    public string Name { get; private set; } = default!;
-    public SemanticVersion PackageVersion { get; private set; }
-    public Version AssemblyVersion { get; private set; }
-    public string InformationalVersion { get; private set; }
+
 }
