@@ -1,6 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.ComponentModel.Design;
+using System.Runtime.CompilerServices;
 using DryIoc;
-using VersION.Core.Extensibility;
+using Microsoft.Extensions.DependencyInjection;
 using VersION.Core.Management;
 
 [assembly: InternalsVisibleTo("VersION")]
@@ -26,6 +27,10 @@ public static class Orchestrator
         RegisterServices();
 
         Container.Use(await SourceFolder.Use(sourceFolder, cancellationToken, progress));
+    }
+
+    internal static void SetupServices(IServiceCollection services)
+    {
     }
 
     public static void Shutdown()

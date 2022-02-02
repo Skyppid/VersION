@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using LibGit2Sharp;
-using VersION.Core.Extensibility;
 
 namespace VersION.Core.Management;
 
@@ -11,7 +10,7 @@ internal sealed class SourceFolder : ISourceFolder
         FullPath = fullPath;
         Name = name;
     }
-    
+
     private readonly List<IProject> _projects = new();
     private readonly Dictionary<string, AsyncLazy<Repository>> _repositories = new();
     private IReadOnlyDictionary<string, AsyncLazy<Repository>>? _readOnlyRepositories;
@@ -33,7 +32,8 @@ internal sealed class SourceFolder : ISourceFolder
 
     public AsyncLazy<Repository>? PrimaryRepository { get; private set; }
 
-    public IReadOnlyDictionary<string, AsyncLazy<Repository>> Repositories => _readOnlyRepositories ??= new ReadOnlyDictionary<string, AsyncLazy<Repository>>(_repositories);
+    public IReadOnlyDictionary<string, AsyncLazy<Repository>> Repositories => _readOnlyRepositories ??=
+        new ReadOnlyDictionary<string, AsyncLazy<Repository>>(_repositories);
 
     ///-------------------------------------------------------------------------------------------------
     /// <summary>   Uses the specified path as the source folder.   </summary>
@@ -48,7 +48,8 @@ internal sealed class SourceFolder : ISourceFolder
     ///
     /// <returns>   An ISourceFolder.   </returns>
     ///-------------------------------------------------------------------------------------------------
-    internal static async Task<ISourceFolder> Use(string path, CancellationToken cancellationToken = default, IProgress<ISourceFolder.SourceFolderScanProgress>? progress = null)
+    internal static async Task<ISourceFolder> Use(string path, CancellationToken cancellationToken = default,
+        IProgress<ISourceFolder.SourceFolderScanProgress>? progress = null)
     {
         DirectoryInfo di = new(path);
         if (!di.Exists)
@@ -73,9 +74,10 @@ internal sealed class SourceFolder : ISourceFolder
     ///
     /// <returns>   A Task. </returns>
     ///-------------------------------------------------------------------------------------------------
-    private async Task AnalyzeFolder(DirectoryInfo directory, CancellationToken cancellationToken = default, IProgress<ISourceFolder.SourceFolderScanProgress>? progress = null)
+    private async Task AnalyzeFolder(DirectoryInfo directory, CancellationToken cancellationToken = default,
+        IProgress<ISourceFolder.SourceFolderScanProgress>? progress = null)
     {
-        progress?.Report(new("Git utilization checkup", 0));
+        progress?.Report(new("Git utilization checkup"));
         GitUtilization = LookupGitRoot(directory);
         await ScanProjects(directory, cancellationToken, progress);
     }
@@ -90,7 +92,8 @@ internal sealed class SourceFolder : ISourceFolder
     ///
     /// <returns>   A task which completes once all projects were scanned.  </returns>
     ///-------------------------------------------------------------------------------------------------
-    private async Task ScanProjects(DirectoryInfo directory, CancellationToken cancellationToken = default, IProgress<ISourceFolder.SourceFolderScanProgress>? progress = null)
+    private async Task ScanProjects(DirectoryInfo directory, CancellationToken cancellationToken = default,
+        IProgress<ISourceFolder.SourceFolderScanProgress>? progress = null)
     {
         var files = directory.GetFiles("*.csproj", SearchOption.AllDirectories);
 
@@ -103,13 +106,14 @@ internal sealed class SourceFolder : ISourceFolder
             projects.Add(task);
             _ = task.ContinueWith(t =>
             {
-                progress?.Report(new("Scanning projects",
-                    Interlocked.Increment(ref scanCount)));
+                progress?.Report(new($"Scanned project {Interlocked.Increment(ref scanCount)} of {files.Length}"));
             }, TaskContinuationOptions.OnlyOnRanToCompletion);
+
+            //await Task.Delay(200, cancellationToken).ConfigureAwait(false);
         }
 
         await Task.WhenAll(projects);
-        progress?.Report(new("Finished", projects.Count(c => c.IsCompletedSuccessfully)));
+        progress?.Report(new("Finished"));
 
         _projects.AddRange(projects.Select(x => x.Result));
     }

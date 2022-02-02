@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AssemblyName>VersION.Plugin.Main</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Spectre.Console" Version="0.43.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\VersION.Core\VersION.Core.csproj" />
+	</ItemGroup>
+
+	<Target Name="CopyPluginToAppDirectory" AfterTargets="Build">
+		<Copy SourceFiles="$(OutDir)\$(AssemblyName).dll" DestinationFiles="..\..\VersION\bin\Debug\net6.0\plugins\$(AssemblyName).dll" />
+	</Target>
+
+</Project>

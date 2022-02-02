@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace VersION.Core.Extensibility
+namespace VersION.Core
 {
     /// <summary>   A semantic version. </summary>
     public record struct SemanticVersion(int Major, int Minor, int Patch, string? PreRelease = null, string? Build = null)

@@ -1,6 +1,6 @@
 ﻿using LibGit2Sharp;
 
-namespace VersION.Core.Extensibility;
+namespace VersION.Core.Management;
 
 ///-------------------------------------------------------------------------------------------------
 /// <summary>
@@ -66,5 +66,5 @@ public interface ISourceFolder : IDisposable
     IReadOnlyDictionary<string, AsyncLazy<Repository>> Repositories { get; }
 
     /// <summary>   (Immutable) a source folder scan progress.  </summary>
-    public record SourceFolderScanProgress(string State, int ProjectsAnalyzed);
+    public record SourceFolderScanProgress(string State);
 }

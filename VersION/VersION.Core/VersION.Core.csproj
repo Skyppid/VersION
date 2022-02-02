@@ -9,10 +9,7 @@
 	<ItemGroup>
 		<PackageReference Include="DryIoc.dll" Version="4.8.6" />
 		<PackageReference Include="LibGit2Sharp" Version="0.26.2" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\VersION.Extensibility\VersION.Extensibility.csproj" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
 	</ItemGroup>
 
 </Project>

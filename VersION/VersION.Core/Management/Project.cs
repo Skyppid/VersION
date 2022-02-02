@@ -1,5 +1,4 @@
 ﻿using System.Xml;
-using VersION.Core.Extensibility;
 using LibGit2Sharp;
 using Version = System.Version;
 

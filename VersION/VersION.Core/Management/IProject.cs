@@ -1,7 +1,7 @@
 ﻿using LibGit2Sharp;
 using Version = System.Version;
 
-namespace VersION.Core.Extensibility;
+namespace VersION.Core.Management;
 
 public interface IProject
 {
